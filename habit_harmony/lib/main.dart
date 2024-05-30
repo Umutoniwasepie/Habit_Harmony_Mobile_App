@@ -1,130 +1,120 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const HabitTrackerApp());
 }
 
-class MyApp extends StatelessWidget {
+class HabitTrackerApp extends StatelessWidget {
+  const HabitTrackerApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Habit Harmony',
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Habit Harmony'),
-        ),
-        body: HabitScreen(),
+      title: 'Habit Tracker',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
       ),
+      home: const HabitTrackerHomePage(),
     );
   }
 }
 
-class HabitScreen extends StatefulWidget {
+class HabitTrackerHomePage extends StatefulWidget {
+  const HabitTrackerHomePage({super.key});
+
   @override
-  _HabitScreenState createState() => _HabitScreenState();
+  _HabitTrackerHomePageState createState() => _HabitTrackerHomePageState();
 }
 
-class _HabitScreenState extends State<HabitScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _habitNameController = TextEditingController();
-  final _habitFrequencyController = TextEditingController();
-  List<Habit> _habits = [];
+class _HabitTrackerHomePageState extends State<HabitTrackerHomePage> {
+  final List<Habit> _habits = [];
+  final TextEditingController _habitNameController = TextEditingController();
+  final TextEditingController _habitFrequencyController = TextEditingController();
+
+  void _addHabit() {
+    final String name = _habitNameController.text;
+    final String frequency = _habitFrequencyController.text;
+
+    if (name.isNotEmpty && frequency.isNotEmpty) {
+      setState(() {
+        _habits.add(Habit(name: name, frequency: frequency));
+      });
+
+      _habitNameController.clear();
+      _habitFrequencyController.clear();
+    }
+  }
+
+  void _toggleHabitCompletion(int index) {
+    setState(() {
+      _habits[index].isCompleted = !_habits[index].isCompleted;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Habit creation form
-        Container(
-          padding: EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Habit Tracker'),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                TextFormField(
+                TextField(
                   controller: _habitNameController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Habit Name',
-                    border: OutlineInputBorder(),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a habit name';
-                    }
-                    return null;
-                  },
                 ),
-                TextFormField(
+                TextField(
                   controller: _habitFrequencyController,
-                  decoration: InputDecoration(
-                    labelText: 'Habit Frequency',
-                    border: OutlineInputBorder(),
+                  decoration: const InputDecoration(
+                    labelText: 'Frequency',
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a habit frequency';
-                    }
-                    return null;
-                  },
+                  keyboardType: TextInputType.number,
                 ),
+                const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      setState(() {
-                        _habits.add(Habit(
-                          name: _habitNameController.text,
-                          frequency: _habitFrequencyController.text,
-                          isCompleted: false,
-                        ));
-                        _habitNameController.clear();
-                        _habitFrequencyController.clear();
-                      });
-                    }
-                  },
-                  child: Text('Add Habit'),
+                  onPressed: _addHabit,
+                  child: const Text('Add Habit'),
                 ),
               ],
             ),
           ),
-        ),
-        // Habit list
-        Expanded(
-          child: ListView.builder(
-            itemCount: _habits.length,
-            itemBuilder: (context, index) {
-              return HabitItem(habit: _habits[index]);
-            },
+          Expanded(
+            child: ListView.builder(
+              itemCount: _habits.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  leading: Checkbox(
+                    value: _habits[index].isCompleted,
+                    onChanged: (value) {
+                      _toggleHabitCompletion(index);
+                    },
+                  ),
+                  title: Text(_habits[index].name),
+                  subtitle: Text('Frequency: ${_habits[index].frequency} times/day'),
+                );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
 class Habit {
-  String name;
-  String frequency;
+  final String name;
+  final String frequency;
   bool isCompleted;
 
-  Habit({required this.name, required this.frequency, required this.isCompleted});
-}
-
-class HabitItem extends StatelessWidget {
-  final Habit habit;
-
-  HabitItem({required this.habit});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Checkbox(
-        value: habit.isCompleted,
-        onChanged: (value) {
-          // Handle checkbox state
-        },
-      ),
-      title: Text(habit.name),
-      subtitle: Text(habit.frequency),
-    );
-  }
+  Habit({
+    required this.name,
+    required this.frequency,
+    this.isCompleted = false,
+  });
 }
