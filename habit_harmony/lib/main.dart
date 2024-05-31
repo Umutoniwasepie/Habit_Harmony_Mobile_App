@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -96,7 +97,8 @@ class _HabitsScreenState extends State<HabitsScreen> {
 }
 
 class Habit {
-  Habit({required this.name, required this.frequency, required this.isCompleted});
+  Habit(
+      {required this.name, required this.frequency, required this.isCompleted});
 
   String name;
   String frequency;
