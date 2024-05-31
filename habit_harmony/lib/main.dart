@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'add_habit_screen.dart'; // Import the AddHabitScreen
+import 'add_habit_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -92,21 +92,60 @@ class HabitsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final completedHabits = habits.where((habit) => habit.isCompleted).toList();
+    final incompleteHabits =
+        habits.where((habit) => !habit.isCompleted).toList();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Habit Harmony'),
       ),
-      body: habits.isEmpty
-          ? const Center(child: Text('No habits added yet.'))
-          : ListView.builder(
-              itemCount: habits.length,
-              itemBuilder: (context, index) {
-                return HabitItem(
-                  habit: habits[index],
-                  onToggleCompletion: () => onToggleCompletion(index),
-                );
-              },
+      body: Column(
+        children: [
+          if (completedHabits.isNotEmpty) ...[
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(
+                'Completed Habits',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: completedHabits.length,
+                itemBuilder: (context, index) {
+                  return HabitItem(
+                    habit: completedHabits[index],
+                    onToggleCompletion: () => onToggleCompletion(
+                        habits.indexOf(completedHabits[index])),
+                  );
+                },
+              ),
+            ),
+          ],
+          if (incompleteHabits.isNotEmpty) ...[
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(
+                'Incomplete Habits',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: incompleteHabits.length,
+                itemBuilder: (context, index) {
+                  return HabitItem(
+                    habit: incompleteHabits[index],
+                    onToggleCompletion: () => onToggleCompletion(
+                        habits.indexOf(incompleteHabits[index])),
+                  );
+                },
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
