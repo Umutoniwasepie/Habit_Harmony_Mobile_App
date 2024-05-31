@@ -31,9 +31,10 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   final List<Habit> _habits = [];
 
-  void _addHabit(String name, String frequency) {
+  void _addHabit(String name, String frequency, DateTime date) {
     setState(() {
-      _habits.add(Habit(name: name, frequency: frequency, isCompleted: false));
+      _habits.add(Habit(
+          name: name, frequency: frequency, date: date, isCompleted: false));
     });
   }
 
@@ -112,10 +113,14 @@ class HabitsScreen extends StatelessWidget {
 
 class Habit {
   Habit(
-      {required this.name, required this.frequency, this.isCompleted = false});
+      {required this.name,
+      required this.frequency,
+      required this.date,
+      this.isCompleted = false});
 
   String name;
   String frequency;
+  DateTime date;
   bool isCompleted;
 }
 
@@ -136,7 +141,8 @@ class HabitItem extends StatelessWidget {
         },
       ),
       title: Text(habit.name),
-      subtitle: Text(habit.frequency),
+      subtitle: Text(
+          'Frequency: ${habit.frequency}\nDate: ${habit.date.day}/${habit.date.month}/${habit.date.year}'),
     );
   }
 }
