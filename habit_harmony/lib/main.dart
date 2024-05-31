@@ -1,187 +1,112 @@
-import 'package:flutter/material.dart';
-import 'add_habit_screen.dart';
+@𝐌𝐲 𝐍𝐮𝐦𝐛𝐞𝐫 Next replace the add_habit_screen with these codes: import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+class AddHabitScreen extends StatefulWidget {
+  final Function(String, String, DateTime?) onAddHabit;
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const AddHabitScreen({required this.onAddHabit, super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Habit Harmony',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-      home: const MainScreen(),
-    );
-  }
+  _AddHabitScreenState createState() => _AddHabitScreenState();
 }
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+class _AddHabitScreenState extends State<AddHabitScreen> {
+  final _habitNameController = TextEditingController();
+  final _habitFrequencyController = TextEditingController();
+  DateTime? _selectedDate;
+  bool _showDatePicker = false;
 
-  @override
-  _MainScreenState createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
-  final List<Habit> _habits = [];
-
-  void _addHabit(String name, String frequency, DateTime date) {
-    setState(() {
-      _habits.add(Habit(
-          name: name, frequency: frequency, date: date, isCompleted: false));
-    });
-  }
-
-  void _toggleHabitCompletion(int index) {
-    setState(() {
-      _habits[index].isCompleted = !_habits[index].isCompleted;
-    });
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
+  void _presentDatePicker() {
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    ).then((pickedDate) {
+      if (pickedDate == null) {
+        return;
+      }
+      setState(() {
+        _selectedDate = pickedDate;
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> _screens = [
-      HabitsScreen(
-        habits: _habits,
-        onToggleCompletion: _toggleHabitCompletion,
-      ),
-      AddHabitScreen(onAddHabit: _addHabit),
-    ];
-
-    return Scaffold(
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'Habits',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add),
-            label: 'Add Habit',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-      ),
-    );
-  }
-}
-
-class HabitsScreen extends StatelessWidget {
-  final List<Habit> habits;
-  final Function(int) onToggleCompletion;
-
-  const HabitsScreen({
-    required this.habits,
-    required this.onToggleCompletion,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final completedHabits = habits.where((habit) => habit.isCompleted).toList();
-    final incompleteHabits =
-        habits.where((habit) => !habit.isCompleted).toList();
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Habit Harmony'),
+        title: const Text('Add Habit'),
       ),
-      body: Column(
-        children: [
-          if (completedHabits.isNotEmpty) ...[
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text(
-                'Completed Habits',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _habitNameController,
+              decoration: const InputDecoration(
+                labelText: 'Habit Name',
               ),
             ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: completedHabits.length,
-                itemBuilder: (context, index) {
-                  return HabitItem(
-                    habit: completedHabits[index],
-                    onToggleCompletion: () => onToggleCompletion(
-                        habits.indexOf(completedHabits[index])),
-                  );
-                },
+            const SizedBox(height: 16),
+            TextField(
+              controller: _habitFrequencyController,
+              decoration: const InputDecoration(
+                labelText: 'Frequency',
               ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedDate == null
+                        ? 'No Date Chosen!'
+                        : 'Picked Date: ${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                  ),
+                ),
+                Switch(
+                  value: _showDatePicker,
+                  onChanged: (value) {
+                    setState(() {
+                      _showDatePicker = value;
+                      if (!_showDatePicker) {
+                        _selectedDate = null;
+                      }
+                    });
+                  },
+                ),
+                _showDatePicker
+                    ? TextButton(
+                        onPressed: _presentDatePicker,
+                        child: const Text(
+                          'Choose Date',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      )
+                    : Container(),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                if (_habitNameController.text.isEmpty ||
+                    _habitFrequencyController.text.isEmpty) {
+                  return;
+                }
+                widget.onAddHabit(
+                  _habitNameController.text,
+                  _habitFrequencyController.text,
+                  _selectedDate,
+                );
+                Navigator.of(context).pop();
+              },
+              child: const Text('Add Habit'),
             ),
           ],
-          if (incompleteHabits.isNotEmpty) ...[
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text(
-                'Incomplete Habits',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: incompleteHabits.length,
-                itemBuilder: (context, index) {
-                  return HabitItem(
-                    habit: incompleteHabits[index],
-                    onToggleCompletion: () => onToggleCompletion(
-                        habits.indexOf(incompleteHabits[index])),
-                  );
-                },
-              ),
-            ),
-          ],
-        ],
+        ),
       ),
-    );
-  }
-}
-
-class Habit {
-  Habit(
-      {required this.name,
-      required this.frequency,
-      required this.date,
-      this.isCompleted = false});
-
-  String name;
-  String frequency;
-  DateTime date;
-  bool isCompleted;
-}
-
-class HabitItem extends StatelessWidget {
-  final Habit habit;
-  final VoidCallback onToggleCompletion;
-
-  const HabitItem(
-      {required this.habit, required this.onToggleCompletion, super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Checkbox(
-        value: habit.isCompleted,
-        onChanged: (value) {
-          onToggleCompletion();
-        },
-      ),
-      title: Text(habit.name),
-      subtitle: Text(
-          'Frequency: ${habit.frequency}\nDate: ${habit.date.day}/${habit.date.month}/${habit.date.year}'),
     );
   }
 }
