@@ -24,6 +24,7 @@ class HabitsScreen extends StatefulWidget {
   const HabitsScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _HabitsScreenState createState() => _HabitsScreenState();
 }
 
@@ -111,6 +112,7 @@ class HabitItem extends StatefulWidget {
   const HabitItem({super.key, required this.habit});
 
   @override
+  // ignore: library_private_types_in_public_api
   _HabitItemState createState() => _HabitItemState();
 }
 
