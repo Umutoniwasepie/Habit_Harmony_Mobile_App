@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'add_habit_screen.dart'; // Import the AddHabitScreen
 
+
 void main() {
   runApp(const MyApp());
 }
@@ -25,7 +26,6 @@ class MainScreen extends StatefulWidget {
 
   @override
   _MainScreenState createState() => _MainScreenState();
-}
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
