@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'app_theme.dart';
+import 'add_habit_screen.dart'; // Import the AddHabitScreen
 
 void main() {
   runApp(const MyApp());
@@ -15,23 +15,80 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: const HabitsScreen(),
+      home: const MainScreen(),
     );
   }
 }
 
-class HabitsScreen extends StatefulWidget {
-  const HabitsScreen({super.key});
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _HabitsScreenState createState() => _HabitsScreenState();
+  _MainScreenState createState() => _MainScreenState();
 }
 
-class _HabitsScreenState extends State<HabitsScreen> {
-  final _habitNameController = TextEditingController();
-  final _habitFrequencyController = TextEditingController();
+class _MainScreenState extends State<MainScreen> {
+  int _selectedIndex = 0;
   final List<Habit> _habits = [];
+
+  void _addHabit(String name, String frequency, DateTime date) {
+    setState(() {
+      _habits.add(Habit(
+          name: name, frequency: frequency, date: date, isCompleted: false));
+    });
+  }
+
+  void _toggleHabitCompletion(int index) {
+    setState(() {
+      _habits[index].isCompleted = !_habits[index].isCompleted;
+    });
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<Widget> _screens = [
+      HabitsScreen(
+        habits: _habits,
+        onToggleCompletion: _toggleHabitCompletion,
+      ),
+      AddHabitScreen(onAddHabit: _addHabit),
+    ];
+
+    return Scaffold(
+      body: _screens[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: 'Habits',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add),
+            label: 'Add Habit',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
+    );
+  }
+}
+
+class HabitsScreen extends StatelessWidget {
+  final List<Habit> habits;
+  final Function(int) onToggleCompletion;
+
+  const HabitsScreen({
+    required this.habits,
+    required this.onToggleCompletion,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,105 +96,53 @@ class _HabitsScreenState extends State<HabitsScreen> {
       appBar: AppBar(
         title: const Text('Habit Harmony'),
       ),
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _habitNameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Habit Name',
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: TextField(
-                        controller: _habitFrequencyController,
-                        decoration: const InputDecoration(
-                          labelText: 'Frequency',
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _habits.add(Habit(
-                        name: _habitNameController.text,
-                        frequency: _habitFrequencyController.text,
-                        isCompleted: false,
-                      ));
-                      _habitNameController.clear();
-                      _habitFrequencyController.clear();
-                    });
-                  },
-                  child: const Text('Add Habit'),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _habits.length,
+      body: habits.isEmpty
+          ? const Center(child: Text('No habits added yet.'))
+          : ListView.builder(
+              itemCount: habits.length,
               itemBuilder: (context, index) {
-                return HabitItem(habit: _habits[index]);
+                return HabitItem(
+                  habit: habits[index],
+                  onToggleCompletion: () => onToggleCompletion(index),
+                );
               },
             ),
-          ),
-        ],
-      ),
     );
   }
 }
 
 class Habit {
   Habit(
-      {required this.name, required this.frequency, required this.isCompleted});
+      {required this.name,
+      required this.frequency,
+      required this.date,
+      this.isCompleted = false});
 
   String name;
   String frequency;
+  DateTime date;
   bool isCompleted;
 }
 
-class HabitItem extends StatefulWidget {
+class HabitItem extends StatelessWidget {
   final Habit habit;
+  final VoidCallback onToggleCompletion;
 
-  const HabitItem({super.key, required this.habit});
-
-  @override
-  // ignore: library_private_types_in_public_api
-  _HabitItemState createState() => _HabitItemState();
-}
-
-class _HabitItemState extends State<HabitItem> {
-  bool _isCompleted = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _isCompleted = widget.habit.isCompleted;
-  }
+  const HabitItem(
+      {required this.habit, required this.onToggleCompletion, super.key});
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       leading: Checkbox(
-        value: _isCompleted,
+        value: habit.isCompleted,
         onChanged: (value) {
-          setState(() {
-            _isCompleted = value!;
-          });
+          onToggleCompletion();
         },
       ),
-      title: Text(widget.habit.name),
-      subtitle: Text(widget.habit.frequency),
+      title: Text(habit.name),
+      subtitle: Text(
+          'Frequency: ${habit.frequency}\nDate: ${habit.date.day}/${habit.date.month}/${habit.date.year}'),
     );
   }
 }
