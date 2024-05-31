@@ -27,7 +27,9 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
         _habitNameController.text,
         _habitFrequencyController.text,
       );
-      Navigator.pop(context);
+      // Clear text fields after adding habit
+      _habitNameController.clear();
+      _habitFrequencyController.clear();
     }
   }
 
